@@ -43,7 +43,7 @@ URLS = {
 
 def _encode_png(images):
     raw = []
-    with tf.Session() as sess, tf.device('cpu:0'):
+    with tf.compat.v1.Session() as sess, tf.device('cpu:0'):
         image_x = tf.placeholder(tf.uint8, [None, None, None], 'image_x')
         to_png = tf.image.encode_png(image_x)
         for x in trange(images.shape[0], desc='PNG Encoding', leave=False):
@@ -73,7 +73,7 @@ def _load_stl10():
                             [0, 3, 2, 1])
 
     with tempfile.NamedTemporaryFile() as f:
-        if tf.gfile.Exists('stl10/stl10_binary.tar.gz'):
+        if tf.compat.v1.gfile.Exists('stl10/stl10_binary.tar.gz'):
             f = tf.gfile.Open('stl10/stl10_binary.tar.gz', 'rb')
         else:
             request.urlretrieve(URLS['stl10'], f.name)
@@ -202,7 +202,7 @@ def _save_as_tfrecord(data, filename):
 def _is_installed(name, checksums):
     for subset, checksum in checksums.items():
         filename = os.path.join(libml_data.DATA_DIR, '%s-%s.tfrecord' % (name, subset))
-        if not tf.gfile.Exists(filename):
+        if not tf.compat.v1.gfile.Exists(filename):
             return False
     return True
 
@@ -210,14 +210,14 @@ def _is_installed(name, checksums):
 def _save_files(files, *args, **kwargs):
     del args, kwargs
     for folder in frozenset(os.path.dirname(x) for x in files):
-        tf.gfile.MakeDirs(os.path.join(libml_data.DATA_DIR, folder))
+        tf.compat.v1.gfile.MakeDirs(os.path.join(libml_data.DATA_DIR, folder))
     for filename, contents in files.items():
         with tf.gfile.Open(os.path.join(libml_data.DATA_DIR, filename), 'w') as f:
             f.write(contents)
 
 
 def _is_installed_folder(name, folder):
-    return tf.gfile.Exists(os.path.join(libml_data.DATA_DIR, name, folder))
+    return tf.compat.v1.gfile.Exists(os.path.join(libml_data.DATA_DIR, name, folder))
 
 
 CONFIGS = dict(
@@ -233,7 +233,7 @@ def main(argv):
         subset = set(argv[1:])
     else:
         subset = set(CONFIGS.keys())
-    tf.gfile.MakeDirs(libml_data.DATA_DIR)
+    tf.compat.v1.gfile.MakeDirs(libml_data.DATA_DIR)
     for name, config in CONFIGS.items():
         if name not in subset:
             continue
