@@ -30,12 +30,12 @@ from libml import utils
 
 
 def get_class(serialized_example):
-    return tf.parse_single_example(serialized_example, features={'label': tf.FixedLenFeature([], tf.int64)})['label']
+    return tf.compat.v1.io.parse_single_example(serialized_example, features={'label': tf.compat.v1.io.FixedLenFeature([], tf.int64)})['label']
 
 
 def main(argv):
     argv.pop(0)
-    if any(not tf.gfile.Exists(f) for f in argv[1:]):
+    if any(not tf.compat.v1.gfile.Exists(f) for f in argv[1:]):
         raise FileNotFoundError(argv[1:])
     target = argv[0]
     input_files = argv[1:]
@@ -43,10 +43,11 @@ def main(argv):
     id_class = []
     class_id = defaultdict(list)
     print('Computing class distribution')
-    dataset = tf.data.TFRecordDataset(input_files).map(get_class, 4).batch(1 << 10)
+    tf.compat.v1.disable_eager_execution() #Added
+    dataset = tf.compat.v1.data.TFRecordDataset(input_files).map(get_class, 4).batch(1 << 10)
     it = dataset.make_one_shot_iterator().get_next()
     try:
-        with tf.Session() as session, tqdm(leave=False) as t:
+        with tf.compat.v1.Session() as session, tqdm(leave=False) as t:
             while 1:
                 old_count = count
                 for i in session.run(it):
@@ -73,11 +74,11 @@ def main(argv):
     npos = np.zeros(nclass, np.int64)
     class_data = [[] for _ in range(nclass)]
     unlabel = []
-    tf.gfile.MakeDirs(os.path.dirname(target))
-    with tf.python_io.TFRecordWriter(target + '-unlabel.tfrecord') as writer_unlabel:
+    tf.compat.v1.gfile.MakeDirs(os.path.dirname(target))
+    with tf.compat.v1.python_io.TFRecordWriter(target + '-unlabel.tfrecord') as writer_unlabel:
         pos, loop = 0, trange(count, desc='Writing records')
         for input_file in input_files:
-            for record in tf.python_io.tf_record_iterator(input_file):
+            for record in tf.compat.v1.python_io.tf_record_iterator(input_file):
                 class_data[id_class[pos]].append((pos, record))
                 while True:
                     c = np.argmax(train_stats - npos / max(npos.max(), 1))
@@ -95,7 +96,7 @@ def main(argv):
                 unlabel.append(p)
                 writer_unlabel.write(v)
         loop.close()
-    with tf.gfile.Open(target + '-unlabel.json', 'w') as writer:
+    with tf.compat.v1.gfile.Open(target + '-unlabel.json', 'w') as writer:
         writer.write(json.dumps(dict(distribution=train_stats.tolist(), indexes=unlabel), indent=2, sort_keys=True))
 
 
