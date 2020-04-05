@@ -340,6 +340,8 @@ class AugmentPoolCTA(AugmentPool):
 
 
 DEFAULT_AUGMENT = EasyDict(
+    covid=AugmentPair(tf=lambda x: dict(image=Primitives.ms(4)(x), label=x['label'], index=x.get('index', -1)),
+                        numpy=AugmentPool),
     cifar10=AugmentPair(tf=lambda x: dict(image=Primitives.ms(4)(x), label=x['label'], index=x.get('index', -1)),
                         numpy=AugmentPool),
     cifar100=AugmentPair(tf=lambda x: dict(image=Primitives.ms(4)(x), label=x['label'], index=x.get('index', -1)),

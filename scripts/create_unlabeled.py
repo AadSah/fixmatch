@@ -31,7 +31,7 @@ from libml import utils
 
 def get_class(serialized_example):
     return tf.compat.v1.io.parse_single_example(serialized_example, features={'label': tf.compat.v1.io.FixedLenFeature([], tf.int64)})['label']
-
+#Just returns the label of an item
 
 def main(argv):
     argv.pop(0)
@@ -51,16 +51,16 @@ def main(argv):
             while 1:
                 old_count = count
                 for i in session.run(it):
-                    id_class.append(i)
+                    id_class.append(i) #id_class = [ 1, 0, 4, 3, 8, ...] 
                     class_id[i].append(count)
                     count += 1
                 t.update(count - old_count)
     except tf.errors.OutOfRangeError:
         pass
     print('%d records found' % count)
-    nclass = len(class_id)
+    nclass = len(class_id) #class_id = {0: [] , 1: [], ...}
     assert min(class_id.keys()) == 0 and max(class_id.keys()) == (nclass - 1)
-    train_stats = np.array([len(class_id[i]) for i in range(nclass)], np.float64)
+    train_stats = np.array([len(class_id[i]) for i in range(nclass)], np.float64) #Number of Images belonging to each class...
     train_stats /= train_stats.max()
     if 'stl10' in argv[1]:
         # All of the unlabeled data is given label 0, but we know that
@@ -71,22 +71,22 @@ def main(argv):
     del class_id
 
     print('Creating unlabeled dataset for in %s' % target)
-    npos = np.zeros(nclass, np.int64)
+    npos = np.zeros(nclass, np.int64) #[0, 0, 0, ...]
     class_data = [[] for _ in range(nclass)]
     unlabel = []
     tf.compat.v1.gfile.MakeDirs(os.path.dirname(target))
     with tf.compat.v1.python_io.TFRecordWriter(target + '-unlabel.tfrecord') as writer_unlabel:
         pos, loop = 0, trange(count, desc='Writing records')
-        for input_file in input_files:
+        for input_file in input_files: #can be skipped for us...
             for record in tf.compat.v1.python_io.tf_record_iterator(input_file):
-                class_data[id_class[pos]].append((pos, record))
+                class_data[id_class[pos]].append((pos, record)) #class_data = [ [(1, 1th record)] [] [(0, 0th record)] [] [] ... []]
                 while True:
                     c = np.argmax(train_stats - npos / max(npos.max(), 1))
                     if class_data[c]:
                         p, v = class_data[c].pop(0)
                         unlabel.append(p)
                         writer_unlabel.write(v)
-                        npos[c] += 1
+                        npos[c] += 1 #npos saves for each class, how many went to unlabelled...
                     else:
                         break
                 pos += 1

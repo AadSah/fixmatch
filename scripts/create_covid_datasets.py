@@ -30,7 +30,7 @@ def load_image(addr):
     if img is None:
         return None
     img = cv2.resize(img, (224, 224), interpolation=cv2.INTER_CUBIC)
-    img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB) #convert gray images to rgb
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) #convert gray images to rgb
 
     return img
  
@@ -50,13 +50,19 @@ def createDataRecord(out_filename, addrs, labels):
         if img is None:
             continue
 
+        # print(img.shape, label)
         # Create a feature
         # feature = {
         #     'image': _bytes_feature(img.tostring()),
         #     'label': _int64_feature(label)
         # }
+
         feat = dict(image=_bytes_feature(img.tostring()),
                     label=_int64_feature(label))
+
+        # print((img.tostring()).shape)
+        # print(type(feat['image']), type(feat['label']))
+        
         # Create an example protocol buffer
         record = tf.train.Example(features=tf.train.Features(feature=feat))
         
@@ -73,10 +79,10 @@ labelled_path = './Labelled_Images/*/*.*g'
 addrs = glob.glob(labelled_path)
 # labels = [0 if 'Cat' in addr else 1 for addr in addrs]  # 0 = Cat, 1 = Dog
 labels = [\
-        1 if 'covid' in addr in addrs \
-        2 if 'bacterial_pneumonia' in addr in addrs \
-        3 if 'viral_pneumonia' in addr in addrs \
-        4 if 'normal' in addr in addrs \
+        0 if 'covid' in addr else \
+        1 if 'bacterial_pneumonia' in addr else \
+        2 if 'viral_pneumonia' in addr else \
+        3 for addr in addrs \
         ]  # 0 = Cat, 1 = Dog
 
 # to shuffle data
@@ -86,6 +92,9 @@ addrs, labels = zip(*c)
     
 # Divide the data into 60% train, 20% validation, and 20% test
 train_addrs = addrs[0:int(0.8*len(addrs))]
+print(str(int(0.8*len(addrs)))+' records found for training...' + \
+        '\n and ' + str(len(addrs) - int(0.8*len(addrs))) + ' for testing...')
+
 train_labels = labels[0:int(0.8*len(labels))]
 # val_addrs = addrs[int(0.6*len(addrs)):int(0.8*len(addrs))]
 # val_labels = labels[int(0.6*len(addrs)):int(0.8*len(addrs))]
@@ -93,6 +102,7 @@ test_addrs = addrs[int(0.8*len(addrs)):]
 test_labels = labels[int(0.8*len(labels)):]
 
 createDataRecord('covid-train.tfrecord', train_addrs, train_labels)
+createDataRecord('covid.1@55-label.tfrecord', train_addrs, train_labels)
 # createDataRecord('val.tfrecords', val_addrs, val_labels)
 createDataRecord('covid-test.tfrecord', test_addrs, test_labels)
 
@@ -105,7 +115,8 @@ unlabelled_path = './Unlabelled_Images/*/*.*g'
 addrs = glob.glob(unlabelled_path)
 # labels = [0 if 'Cat' in addr else 1 for addr in addrs]  # 0 = Cat, 1 = Dog
 labels = [\
-        0 if 'unlabelled' in addr in addrs \
+        -1 if 'unlabelled' in addr else \
+        -1 for addr in addrs \
         # 0 if 'bacterial_pneumonia' in addr in addrs \
         # 0 if 'viral_pneumonia' in addr in addrs \
         # 0 if 'normal' in addr in addrs \
@@ -118,6 +129,7 @@ addrs, labels = zip(*c)
     
 # Divide the data into 60% train, 20% validation, and 20% test
 train_addrs = addrs[0:]
+print('Number of unlabelled images: ' + str(len(addrs)))
 train_labels = labels[0:]
 # val_addrs = addrs[int(0.6*len(addrs)):int(0.8*len(addrs))]
 # val_labels = labels[int(0.6*len(addrs)):int(0.8*len(addrs))]

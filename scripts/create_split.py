@@ -41,7 +41,7 @@ def get_class(serialized_example):
 
 
 def main(argv):
-    assert FLAGS.size
+    assert FLAGS.size #Non-zero slides
     argv.pop(0)
     if any(not tf.gfile.Exists(f) for f in argv[1:]):
         raise FileNotFoundError(argv[1:])
@@ -52,7 +52,7 @@ def main(argv):
     count = 0
     id_class = []
     class_id = defaultdict(list)
-    print('Computing class distribution')
+    print('Computing class distribution') #again
     dataset = tf.data.TFRecordDataset(input_files).map(get_class, 4).batch(1 << 10)
     it = dataset.make_one_shot_iterator().get_next()
     try:
@@ -61,7 +61,7 @@ def main(argv):
                 old_count = count
                 for i in session.run(it):
                     id_class.append(i)
-                    class_id[i].append(count)
+                    class_id[i].append(count) #class_id = {0: [] , 1: [], ...}
                     count += 1
                 t.update(count - old_count)
     except tf.errors.OutOfRangeError:
@@ -70,7 +70,7 @@ def main(argv):
     nclass = len(class_id)
     assert min(class_id.keys()) == 0 and max(class_id.keys()) == (nclass - 1)
     train_stats = np.array([len(class_id[i]) for i in range(nclass)], np.float64)
-    train_stats /= train_stats.max()
+    train_stats /= train_stats.max() #again
     if 'stl10' in argv[1]:
         # All of the unlabeled data is given label 0, but we know that
         # STL has equally distributed data among the 10 classes.
@@ -78,7 +78,7 @@ def main(argv):
 
     print('  Stats', ' '.join(['%.2f' % (100 * x) for x in train_stats]))
     assert min(class_id.keys()) == 0 and max(class_id.keys()) == (nclass - 1)
-    class_id = [np.array(class_id[i], dtype=np.int64) for i in range(nclass)]
+    class_id = [np.array(class_id[i], dtype=np.int64) for i in range(nclass)] #ist of lists...
     if FLAGS.seed:
         np.random.seed(FLAGS.seed)
         for i in range(nclass):

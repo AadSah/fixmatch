@@ -285,6 +285,8 @@ class DataSets:
 
 def create_datasets(augment_fn):
     d = {}
+    d.update([DataSets.creator('covid', 1, 70, 10, augment_fn, nclass=4)]) #Added
+    print('d.update done...')
     d.update([DataSets.creator('cifar10', seed, label, valid, augment_fn)
               for seed, label, valid in itertools.product(range(6), [10 * x for x in SAMPLES_PER_CLASS], [1, 5000])])
     d.update([DataSets.creator('cifar100', seed, label, valid, augment_fn, nclass=100)
