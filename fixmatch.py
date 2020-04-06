@@ -74,7 +74,7 @@ class FixMatch(CTAReMixMatch):
             print("Got Unlabelled!...")
             self.tmp.step = self.session.run(self.step)
             print('self.tmp.step : '+str(self.tmp.step))
-            print('train_img : '+str(train_img))
+            print('train_img : '+str(train_nimg))
             print('report_nimg : '+str(report_nimg))
             while self.tmp.step < train_nimg:
                 loop = trange(self.tmp.step % report_nimg, report_nimg, batch,
