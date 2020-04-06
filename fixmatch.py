@@ -84,9 +84,8 @@ class FixMatch(CTAReMixMatch):
                 #               desc='Epoch %d/%d' % (1 + (self.tmp.step // report_nimg), train_nimg // report_nimg)) #Added Epoch Flag
                 loop = trange(self.tmp.step % report_nimg, report_nimg, batch,
                               leave=False, unit='img', unit_scale=batch,
-                              desc='Epoch %d/%d' % (1 + (self.tmp.step // report_nimg), train_nimg // report_nimg)) #Added Epoch Flag
+                              desc='Epoch %d/%d' % ((self.tmp.step // report_nimg), train_nimg // report_nimg)) #Added Epoch Flag
                 for _ in loop:
-                    print("Loop Loop Honey Loop...")
                     self.train_step(train_session, gen_labeled, gen_unlabeled)
                     while self.tmp.print_queue:
                         loop.write(self.tmp.print_queue.pop(0))
