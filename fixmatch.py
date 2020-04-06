@@ -73,6 +73,9 @@ class FixMatch(CTAReMixMatch):
             gen_unlabeled = self.gen_unlabeled_fn(train_unlabeled)
             print("Got Unlabelled!...")
             self.tmp.step = self.session.run(self.step)
+            print('self.tmp.step : '+str(self.tmp.step))
+            print('train_img : '+str(train_img))
+            print('report_nimg : '+str(report_nimg))
             while self.tmp.step < train_nimg:
                 loop = trange(self.tmp.step % report_nimg, report_nimg, batch,
                               leave=False, unit='img', unit_scale=batch,

@@ -45,6 +45,7 @@ class CTAClassifySemi(ClassifySemi):
     def gen_labeled_fn(self, data_iterator):
         def wrap():
             batch = self.session.run(data_iterator)
+            print('batch of gen_labeled_fn: '+str(batch))
             batch['cta'] = self.augmenter
             batch['probe'] = True
             return batch
@@ -54,6 +55,7 @@ class CTAClassifySemi(ClassifySemi):
     def gen_unlabeled_fn(self, data_iterator):
         def wrap():
             batch = self.session.run(data_iterator)
+            print('batch of gen_unlabeled_fn: '+str(batch))
             batch['cta'] = self.augmenter
             batch['probe'] = False
             return batch

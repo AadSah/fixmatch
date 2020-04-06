@@ -74,7 +74,7 @@ if __name__ == '__main__':
     flags.DEFINE_bool('use_xe', True, 'Whether to use cross-entropy or Brier.')
     FLAGS.set_default('augment', 'd.d.d')
     FLAGS.set_default('dataset', 'cifar10.3@250-5000')
-    FLAGS.set_default('batch', 64)
+    FLAGS.set_default('batch', 4) #----Changed 64-->4
     FLAGS.set_default('lr', 0.002)
     FLAGS.set_default('train_kimg', 1 << 16)
     app.run(main)
