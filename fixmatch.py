@@ -60,7 +60,7 @@ class FixMatch(CTAReMixMatch):
         with tf.Session(config=utils.get_config()) as sess:
             self.session = sess
             self.cache_eval()
-        print("I've Reached Here!...")
+        print("About to Start Training...")
         with tf.train.MonitoredTrainingSession(
                 scaffold=scaffold,
                 checkpoint_dir=self.checkpoint_dir,
@@ -69,17 +69,22 @@ class FixMatch(CTAReMixMatch):
                 save_summaries_steps=report_nimg - batch) as train_session:
             self.session = train_session._tf_sess()
             gen_labeled = self.gen_labeled_fn(train_labeled)
-            print("Got Labelled!...")
+            print("Got Labelled Data!...")
             gen_unlabeled = self.gen_unlabeled_fn(train_unlabeled)
-            print("Got Unlabelled!...")
+            print("Got Unlabelled Data!...")
             self.tmp.step = self.session.run(self.step)
             print('self.tmp.step : '+str(self.tmp.step))
             print('train_img : '+str(train_nimg))
             print('report_nimg : '+str(report_nimg))
+            print('Number of Epochs to train : '+str(train_nimg // report_nimg))
+            print('Number of Iterations per epoch : '+str(report_nimg))
             while self.tmp.step < train_nimg:
+                # loop = trange(self.tmp.step % report_nimg, report_nimg, batch,
+                #               leave=False, unit='img', unit_scale=batch,
+                #               desc='Epoch %d/%d' % (1 + (self.tmp.step // report_nimg), train_nimg // report_nimg)) #Added Epoch Flag
                 loop = trange(self.tmp.step % report_nimg, report_nimg, batch,
                               leave=False, unit='img', unit_scale=batch,
-                              desc='Epoch %d/%d' % (1 + (self.tmp.step // report_nimg), train_nimg // report_nimg))
+                              desc='Epoch %d/%d' % (1 + (self.tmp.step // report_nimg), train_nimg // report_nimg)) #Added Epoch Flag
                 for _ in loop:
                     print("Loop Loop Honey Loop...")
                     self.train_step(train_session, gen_labeled, gen_unlabeled)
@@ -147,7 +152,7 @@ class FixMatch(CTAReMixMatch):
 def main(argv):
     utils.setup_main()
     del argv  # Unused.
-    print(data.PAIR_DATASETS())
+    # print(data.PAIR_DATASETS())
     dataset = data.PAIR_DATASETS()[FLAGS.dataset]()
     log_width = utils.ilog2(dataset.width)
     model = FixMatch(
