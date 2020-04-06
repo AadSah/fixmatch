@@ -60,7 +60,7 @@ class FixMatch(CTAReMixMatch):
         with tf.Session(config=utils.get_config()) as sess:
             self.session = sess
             self.cache_eval()
-
+        print("I've Reached Here!...")
         with tf.train.MonitoredTrainingSession(
                 scaffold=scaffold,
                 checkpoint_dir=self.checkpoint_dir,
@@ -69,13 +69,16 @@ class FixMatch(CTAReMixMatch):
                 save_summaries_steps=report_nimg - batch) as train_session:
             self.session = train_session._tf_sess()
             gen_labeled = self.gen_labeled_fn(train_labeled)
+            print("Got Labelled!...")
             gen_unlabeled = self.gen_unlabeled_fn(train_unlabeled)
+            print("Got Unlabelled!...")
             self.tmp.step = self.session.run(self.step)
             while self.tmp.step < train_nimg:
                 loop = trange(self.tmp.step % report_nimg, report_nimg, batch,
                               leave=False, unit='img', unit_scale=batch,
                               desc='Epoch %d/%d' % (1 + (self.tmp.step // report_nimg), train_nimg // report_nimg))
                 for _ in loop:
+                    print("Loop Loop Honey Loop...")
                     self.train_step(train_session, gen_labeled, gen_unlabeled)
                     while self.tmp.print_queue:
                         loop.write(self.tmp.print_queue.pop(0))
@@ -141,6 +144,7 @@ class FixMatch(CTAReMixMatch):
 def main(argv):
     utils.setup_main()
     del argv  # Unused.
+    print(data.PAIR_DATASETS())
     dataset = data.PAIR_DATASETS()[FLAGS.dataset]()
     log_width = utils.ilog2(dataset.width)
     model = FixMatch(
@@ -171,7 +175,7 @@ if __name__ == '__main__':
     flags.DEFINE_integer('uratio', 7, 'Unlabeled batch size ratio.')
     FLAGS.set_default('augment', 'd.d.d')
     FLAGS.set_default('dataset', 'cifar10.3@250-1')
-    FLAGS.set_default('batch', 64)
+    FLAGS.set_default('batch', 4) #--------Changed 64-->4
     FLAGS.set_default('lr', 0.03)
     FLAGS.set_default('train_kimg', 1 << 16)
     app.run(main)

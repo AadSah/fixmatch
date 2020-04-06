@@ -13,15 +13,14 @@ def _int64_feature(value):
 def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
-
-# def _encode_png(images):
-#     raw = []
-#     with tf.compat.v1.Session() as sess, tf.device('cpu:0'):
-#         image_x = tf.placeholder(tf.uint8, [None, None, None], 'image_x')
-#         to_png = tf.image.encode_png(image_x)
-#         for x in trange(images.shape[0], desc='PNG Encoding', leave=False):
-#             raw.append(sess.run(to_png, feed_dict={image_x: images[x]}))
-#     return raw
+def _encode_png(images):
+    raw = []
+    with tf.compat.v1.Session() as sess, tf.device('cpu:0'):
+        image_x = tf.placeholder(tf.uint8, [None, None, None], 'image_x')
+        to_png = tf.image.encode_png(image_x)
+        for x in trange(images.shape[0], desc='PNG Encoding', leave=False):
+            raw.append(sess.run(to_png, feed_dict={image_x: images[x]}))
+    return raw
 
 def load_image(addr):
     # read an image and resize to (224, 224)
@@ -36,7 +35,9 @@ def load_image(addr):
  
 def createDataRecord(out_filename, addrs, labels):
     # open the TFRecords file
-    writer = tf.python_io.TFRecordWriter(out_filename)
+    myDictionary = {'images':[],
+                    'labels':[]}
+    # writer = tf.python_io.TFRecordWriter(out_filename)
     for i in range(len(addrs)):
         # print how many images are saved every 1000 images
         if not i % 10:
@@ -50,6 +51,8 @@ def createDataRecord(out_filename, addrs, labels):
         if img is None:
             continue
 
+        myDictionary['images'].append(np.array(img, dtype=np.uint8))
+        myDictionary['labels'].append(labels[i])
         # print(img.shape, label)
         # Create a feature
         # feature = {
@@ -57,18 +60,32 @@ def createDataRecord(out_filename, addrs, labels):
         #     'label': _int64_feature(label)
         # }
 
-        feat = dict(image=_bytes_feature(img.tostring()),
-                    label=_int64_feature(label))
+        # feat = dict(image=_bytes_feature(_encode_png(img)),
+        #             label=_int64_feature(label))
 
         # print((img.tostring()).shape)
         # print(type(feat['image']), type(feat['label']))
         
         # Create an example protocol buffer
-        record = tf.train.Example(features=tf.train.Features(feature=feat))
+        # record = tf.train.Example(features=tf.train.Features(feature=feat))
         
-        # Serialize to string and write on the file
-        writer.write(record.SerializeToString())
-        
+        # # Serialize to string and write on the file
+        # writer.write(record.SerializeToString())
+    myDictionary['images'] = np.array(myDictionary['images'])
+    myDictionary['images'] = _encode_png(myDictionary['images'])
+
+    assert len(myDictionary['images']) == len(myDictionary['labels'])
+    filename = out_filename
+    print('Saving dataset:', str(filename))
+    with tf.python_io.TFRecordWriter(filename) as writer:
+        for x in trange(len(myDictionary['images']), desc='Building records'):
+            feat = dict(image=_bytes_feature(myDictionary['images'][x]),
+                        label=_int64_feature(myDictionary['labels'][x]))
+            record = tf.train.Example(features=tf.train.Features(feature=feat))
+            writer.write(record.SerializeToString())
+    print('Saved:', filename)
+
+
     writer.close()
     sys.stdout.flush()
 

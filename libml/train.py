@@ -29,7 +29,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('train_dir', './experiments',
                     'Folder where to save training data.')
 flags.DEFINE_float('lr', 0.0001, 'Learning rate.')
-flags.DEFINE_integer('batch', 64, 'Batch size.')
+flags.DEFINE_integer('batch', 4, 'Batch size.')#--------Changed 64-->4
 flags.DEFINE_integer('train_kimg', 1 << 14, 'Training duration in kibi-samples.')
 flags.DEFINE_integer('report_kimg', 64, 'Report summary period in kibi-samples.')
 flags.DEFINE_integer('save_kimg', 64, 'Save checkpoint period in kibi-samples.')

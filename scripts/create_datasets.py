@@ -248,6 +248,7 @@ def main(argv):
         datas = config['loader']()
         saver = config.get('saver', _save_as_tfrecord)
         for sub_name, data in datas.items():
+            print(sub_name, name)
             if sub_name == 'readme':
                 filename = os.path.join(libml_data.DATA_DIR, '%s-%s.txt' % (name, sub_name))
                 with tf.gfile.Open(filename, 'w') as f:
